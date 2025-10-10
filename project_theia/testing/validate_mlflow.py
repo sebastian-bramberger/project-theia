@@ -4,7 +4,7 @@ from pathlib import Path
 
 import mlflow
 
-from project_theia.utils import mlflow_utils
+from project_theia.logging import utils
 
 
 class ValidateMlflowRun:

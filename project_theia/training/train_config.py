@@ -15,13 +15,16 @@ from project_theia.data.data_config import MnistConfig
 
 @dataclass
 class TrainConfig:
+    logging: bool = True
     name: str = "train_config"
     job_id: str = "no_job_id"
     description: Optional[str] = None
     ckpt_metric: str = "val_iou_global_ignored"
     ckpt_mode: str = "max"
     eval_after_train: bool = True
-    mlflow_expmt: str = "woodscape_tests"
+    wandb_project: str = "project_theia_mnist"  # change to your project name
+    wandb_entity: Optional[str] = None  # your team/org if you have one
+    wandb_tags: List[str] = field(default_factory=list)
     log_gpu_stats: bool = True
     early_stopping: bool = False
     early_stopping_monitor: str = "val_iou_global_ignored"
@@ -52,53 +55,50 @@ class ResumeConfig:
 
 @dataclass
 class PLConfig:
-    checkpoint_callback: bool = True
+    # Paths & logging
     default_root_dir: Optional[str] = None
-    gradient_clip_val: float = 0.0
-    gradient_clip_algorithm: str = "norm"
-    process_position: int = 0
+    log_every_n_steps: int = 50
+
+    # Device/precision/strategy (set these explicitly in code when building the Trainer)
+    accelerator: Optional[str] = None        # e.g., "gpu", "cpu", "auto"
+    devices: Optional[Union[int, List[int], str]] = None  # e.g., 1, 4, "auto"
     num_nodes: int = 1
-    num_processes: int = 1
-    gpus: Optional[Union[List[int], str, int]] = None
-    auto_select_gpus: bool = False
-    tpu_cores: Optional[Union[List[int], str, int]] = None
-    log_gpu_memory: Optional[str] = None
-    progress_bar_refresh_rate: Optional[int] = None
-    overfit_batches: Union[int, float] = 0.0
-    track_grad_norm: Union[int, float, str] = -1
-    check_val_every_n_epoch: int = 1
-    fast_dev_run: Union[int, bool] = False
-    accumulate_grad_batches: Union[int, Dict[int, int], List[list]] = 1
+    strategy: Optional[Union[str, object]] = None   # e.g., "ddp" or DDPStrategy(...)
+
+    # Training loop
     max_epochs: Optional[int] = None
     min_epochs: Optional[int] = None
     max_steps: Optional[int] = None
     min_steps: Optional[int] = None
     max_time: Optional[Union[str, timedelta, Dict[str, int]]] = None
+    accumulate_grad_batches: Union[int, Dict[int, int], List[list]] = 1
+    gradient_clip_val: float = 0.0
+    gradient_clip_algorithm: str = "norm"
+    check_val_every_n_epoch: int = 1
+    val_check_interval: Union[int, float] = 1.0
+    num_sanity_val_steps: int = 2
+    truncated_bptt_steps: Optional[int] = None
+
+    # Batching / limits
     limit_train_batches: Union[int, float] = 1.0
     limit_val_batches: Union[int, float] = 1.0
     limit_test_batches: Union[int, float] = 1.0
     limit_predict_batches: Union[int, float] = 1.0
-    val_check_interval: Union[int, float] = 1.0
-    flush_logs_every_n_steps: int = 100
-    log_every_n_steps: int = 50
-    accelerator: Optional[Union[str, Accelerator]] = None
-    sync_batchnorm: bool = False
-    precision: int = 32
-    weights_save_path: Optional[str] = None
-    num_sanity_val_steps: int = 2
-    truncated_bptt_steps: Optional[int] = None
-    resume_from_checkpoint: Optional[Union[Path, str]] = None
-    benchmark: bool = False
+
+    # Dev / debug
+    fast_dev_run: Union[int, bool] = False
     deterministic: bool = False
-    reload_dataloaders_every_epoch: bool = False
-    auto_lr_find: Union[bool, str] = False
-    replace_sampler_ddp: bool = True
-    terminate_on_nan: bool = False
-    auto_scale_batch_size: Union[str, bool] = False
-    prepare_data_per_node: bool = True
-    amp_backend: str = "native"
-    amp_level: str = "O2"
-    distributed_backend: Optional[str] = None
+    benchmark: bool = False
+    reload_dataloaders_every_n_epochs: int = 0  # replaces reload_dataloaders_every_epoch
+    overfit_batches: Union[int, float] = 0.0    # you’re guarding this upstream anyway
+
+    # Mixed precision
+    precision: Union[int, str] = "32-true"  # prefer "16-mixed", "bf16-mixed", "32-true", "64-true"
+
+    # Distributed
+    sync_batchnorm: bool = False
     move_metrics_to_cpu: bool = False
-    multiple_trainloader_mode: str = "max_size_cycle"
-    stochastic_weight_avg: bool = False
+
+    # Auto-tune
+    auto_lr_find: Union[bool, str] = False
+    auto_scale_batch_size: Union[str, bool] = False

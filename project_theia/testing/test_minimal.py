@@ -2,7 +2,7 @@ from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import MNIST
 from torchvision import transforms
 from lightning import pytorch as pl
-from lightning.pytorch.loggers import TensorBoardLogger
+from lightning.pytorch.loggers import WandbLogger
 from project_theia.models_lightning.mnist.model_lightning_mnist import LitMNIST, LitMNISTConfig
 from project_theia.data.data_spec import DataSpec
 
@@ -22,10 +22,15 @@ train_loader = DataLoader(mnist_train, batch_size=32, shuffle=True)
 val_loader = DataLoader(mnist_val, batch_size=32)
 test_loader = DataLoader(mnist_test, batch_size=32)
 
-logger = TensorBoardLogger("tb_logs", name="mnist")
+wandb_logger = WandbLogger(
+    entity="us-guidance",
+    project="sandbox",
+    tags=["test", "local"],  # optional
+    log_model=True           # log model checkpoints to W&B
+)
 
 # --- Train ---
-trainer = pl.Trainer(max_epochs=3, accelerator="auto", logger=logger)
+trainer = pl.Trainer(max_epochs=3, accelerator="auto", logger=wandb_logger)
 model = LitMNIST(config=LitMNISTConfig(),data_spec=DataSpec())
 trainer.fit(model, train_loader, val_loader)
 
