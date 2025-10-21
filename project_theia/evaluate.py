@@ -14,7 +14,6 @@ from project_theia.data import data
 from project_theia.evaluation.evaluate_config import EvaluateConfig
 from project_theia.training.train_config import PLConfig
 from project_theia.utils import get_paths, utils
-from project_theia.logging.utils import get_tracking_uri_mlflow
 
 
 def evaluate(eval_config: EvaluateConfig, pl_config: PLConfig, config_path: str):

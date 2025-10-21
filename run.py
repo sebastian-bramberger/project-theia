@@ -14,13 +14,6 @@ from compute_environment import compute_environment
 from project_theia.utils import get_paths
 
 
-def assert_mlflow_db_exists():
-    db_path = get_paths.get_mlflow_db_path()
-    os.makedirs(Path(db_path).parent, exist_ok=True)
-    if not os.path.isfile(db_path):
-        open(db_path, "w").close()
-
-
 def env_prefix(env):
     if env == "local":
         return []
@@ -64,60 +57,6 @@ def env_prefix(env):
         command += ["-w", get_paths.get_base_path()]
         command += ["project_theia"]
         return command
-
-
-def mlf_server(run_args, sub_args):
-    if sub_args != []:
-        print(f"unknown arguments: {' '.join(sub_args)}")
-        sys.exit(1)
-
-    if run_args.backend == "filesystem":
-        command = env_prefix(run_args.env) + ["mlflow", "server"]
-        command += ["--backend-store-uri", "file://" + get_paths.get_mlruns_path()]
-        command += ["--workers", str(run_args.workers)]
-        command += ["--port", str(run_args.port)]
-        print(f"running: {' '.join(command)}")
-        subprocess.run(command)
-        return
-
-    server_file = get_paths.get_tracking_server_file_path()
-    if os.path.isfile(server_file):
-        with open(server_file, "r") as f:
-            server_data = json.load(f)
-        print(
-            f"The tracking server is already running on the host {server_data['host']},"
-            + f" listening to port {server_data['port']}. It was started"
-            + f" at {server_data['start_time']} by the user {server_data['user']}. Aborting."
-        )
-        sys.exit(1)
-
-    server_data = {
-        "user": getpass.getuser(),
-        "start_time": datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y"),
-        "host": socket.gethostname(),
-        "port": run_args.port,
-        "workers": run_args.workers,
-        "timeout": run_args.timeout,
-    }
-    with open(server_file, "w") as f:
-        json.dump(server_data, f)
-
-    command = env_prefix(run_args.env) + ["mlflow", "server"]
-    command += ["--backend-store-uri"]
-    command += ["sqlite:///" + get_paths.get_mlflow_db_path() + "?timeout=" + str(run_args.timeout)]
-    command += ["--default-artifact-root", "file://" + get_paths.get_mlruns_path()]
-    command += ["--workers", str(run_args.workers)]
-    command += ["--host", "0.0.0.0"]
-    command += ["--port", str(run_args.port)]
-    print(f"running: {' '.join(command)}")
-    try:
-        subprocess.run(command)
-    except KeyboardInterrupt:
-        pass
-
-    if os.path.isfile(server_file):
-        os.remove(server_file)
-        print(f"removed server file {server_file}")
 
 
 def build_sin(run_args, sub_args):

@@ -1,16 +1,16 @@
 from typing import Tuple
-from pytorch_lightning.demos import mnist_datamodule
+from project_theia.data.mnist import mnist_dataset
 from project_theia.data.data_spec import create_dataspec_from_data_module
-from data_config import MnistConfig
+from project_theia.data.data_config import MnistConfig
 
 
-def get_mnist_data_module(config):
-    dm = mnist_datamodule.MNISTDataModule(
+
+def get_mnist_data_module(config: MnistConfig):
+    dm = mnist_dataset.MNISTDataModule(
         val_split=config.val_split,
         num_workers=config.num_workers,
         normalize=config.normalize,
         seed=config.seed,
-        batch_size=config.batch_size,
         ** config.common.__dict__
     )
     data_spec = create_dataspec_from_data_module(dm)

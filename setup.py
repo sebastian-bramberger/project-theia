@@ -13,7 +13,7 @@ setup(
         "lightning==2.5.5"
         "matplotlib==3.10.7"
         "torch==2.8.0"
-        "wandb-0.22.2"
+        "wandb-0.22.2", 'lightning', 'torchvision'
     ],
     python_requires=">=3.12, <3.14",
     setup_requires=[

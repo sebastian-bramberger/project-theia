@@ -4,10 +4,7 @@ from dataclasses import dataclass, field
 import torch
 from torch import nn
 from lightning import pytorch as pl
-from torchmetrics import MetricCollection, Accuracy
-from torchmetrics.detection import IntersectionOverUnion
 
-from project_theia.data import data_spec
 from project_theia.models_torch.mnist.mnist_classifier import SimpleMNISTNet, SimpleMNISTNetConfig
 from project_theia.training.optimizer import OptimizerConfig, get_lightning_optimizer_dict
 from project_theia.data.data_spec import DataSpec

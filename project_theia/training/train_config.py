@@ -6,9 +6,7 @@ from pathlib import Path
 from pytorch_lightning.accelerators import Accelerator
 
 from project_theia.models_lightning.models_lightning import MODEL_CONFIGS_LITERAL
-from project_theia.models_lightning.mnist.model_lightning_mnist import (
-    MnistClassifierConfig,
-)
+from project_theia.models_lightning.mnist.model_lightning_mnist import SimpleMNISTNetConfig
 
 from project_theia.data.data_config import MnistConfig
 
@@ -22,9 +20,9 @@ class TrainConfig:
     ckpt_metric: str = "val_iou_global_ignored"
     ckpt_mode: str = "max"
     eval_after_train: bool = True
-    wandb_project: str = "project_theia_mnist"  # change to your project name
-    wandb_entity: Optional[str] = None  # your team/org if you have one
-    wandb_tags: List[str] = field(default_factory=list)
+    logging_project: str = "project_theia_mnist"  # project name for wandb
+    logging_entity: Optional[str] = None  # team/org for wandb
+    logging_tags: List[str] = field(default_factory=list) # for wandb
     log_gpu_stats: bool = True
     early_stopping: bool = False
     early_stopping_monitor: str = "val_iou_global_ignored"
@@ -42,7 +40,7 @@ class SingleModelTrainRun:
     data: Literal[
         MnistConfig
     ] = field(default_factory=MnistConfig)
-    model: MODEL_CONFIGS_LITERAL = field(default_factory=MnistClassifierConfig)
+    model: MODEL_CONFIGS_LITERAL = field(default_factory=SimpleMNISTNetConfig)
 
 
 @dataclass
